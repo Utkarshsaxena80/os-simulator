@@ -1,0 +1,53 @@
+/* Custom styles for CPU Scheduling Simulator */
+
+#gantt-chart {
+    position: relative;
+}
+
+.gantt-bar {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.gantt-bar:hover {
+    opacity: 0.8;
+}
+
+.gantt-tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1000;
+    display: none;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.process-id-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    fill: white;
+    dominant-baseline: middle;
+    text-anchor: middle;
+}
+

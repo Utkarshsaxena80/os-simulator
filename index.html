@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Scheduling Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">CPU Scheduling Simulator</h1>
+            <p class="text-gray-600">Interactive visualization of CPU scheduling algorithms</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Panel: Process Input -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800">Process Input</h2>
+                
+                <!-- Algorithm Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Scheduling Algorithm</label>
+                    <select id="algorithm" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="fcfs">FCFS (First Come First Served)</option>
+                        <option value="sjf-nonpreemptive">SJF (Non-preemptive)</option>
+                        <option value="sjf-preemptive">SJF (Preemptive / SRTF)</option>
+                        <option value="priority-nonpreemptive">Priority (Non-preemptive)</option>
+                        <option value="priority-preemptive">Priority (Preemptive)</option>
+                        <option value="roundrobin">Round Robin</option>
+                    </select>
+                </div>
+
+                <!-- Time Quantum Input (for Round Robin) -->
+                <div id="quantum-container" class="mb-6 hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Time Quantum</label>
+                    <input type="number" id="quantum" min="1" value="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <!-- Process Form -->
+                <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">Add Process</h3>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Process ID</label>
+                            <input type="text" id="pid-input" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="P1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Arrival Time</label>
+                            <input type="number" id="arrival-input" min="0" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Burst Time</label>
+                            <input type="number" id="burst-input" min="1" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                            <input type="number" id="priority-input" min="1" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="1">
+                        </div>
+                    </div>
+                    <button id="add-process-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Add Process
+                    </button>
+                </div>
+
+                <!-- Process Table -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-medium text-gray-700">Processes</h3>
+                        <div class="space-x-2">
+                            <button id="generate-random-btn" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors">
+                                Generate Random
+                            </button>
+                            <button id="clear-btn" class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-gray-300">
+                            <thead>
+                                <tr class="bg-gray-200">
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">PID</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Arrival</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Burst</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Priority</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="process-table-body">
+                                <!-- Processes will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Run Simulation Button -->
+                <button id="run-simulation-btn" class="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors font-semibold text-lg">
+                    Run Simulation
+                </button>
+            </div>
+
+            <!-- Right Panel: Results -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800">Simulation Results</h2>
+                
+                <!-- Gantt Chart -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">Gantt Chart</h3>
+                    <div id="gantt-chart" class="border border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[200px]">
+                        <!-- Gantt chart will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Metrics -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">Performance Metrics</h3>
+                    <div id="metrics-display" class="space-y-2">
+                        <!-- Metrics will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Process Details Table -->
+                <div>
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">Process Details</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-gray-300">
+                            <thead>
+                                <tr class="bg-gray-200">
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">PID</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Arrival</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Burst</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Start</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">End</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Waiting</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Turnaround</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Response</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-table-body">
+                                <!-- Results will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="algorithms.js"></script>
+    <script src="gantt.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+
